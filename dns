@@ -1,0 +1,77 @@
+#!/bin/bash
+#
+# dns -- A simple tool to easily add/remove from the local hostfile
+# so you don't need to fire up an editor to switch a domain
+# back and forth between localhost when developing a website
+#
+#
+# Copyright 2011 Derek Gallo. All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+#    1. Redistributions of source code must retain the above copyright notice,
+#       this list of conditions and the following disclaimer.
+# 
+#    2. Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY DEREK GALLO ``AS IS'' AND ANY EXPRESS OR
+# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL DEREK GALLO OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+# OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+# NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# 
+# The views and conclusions contained in the software and documentation are
+# those of the authors and should not be interpreted as representing official
+# policies, either expressed or implied, of Derek Gallo.
+#
+
+usage()
+{
+cat << EOF
+
+Modify a dns host name locally on this machine.
+
+dns <ip-address> <domain-name>
+
+<ip-address>    - The ip address to point the domain name to. 
+                - local = localhost
+                - global = use DNS (remove hostfile entry)
+<domain-name>   - domain name to add/remove to host database
+
+EOF
+}
+
+IP=$1
+DOMAIN=$2
+
+if [[ -z $IP ]] || [[ -z $DOMAIN ]]
+then
+     usage
+     exit 1
+fi
+
+#if global given then remove the hostname from the host file
+if [ $IP == "global" ]
+then
+     sudo bash -c "sed /$DOMAIN/d /etc/hosts > /tmp/hosts"
+	 # when attempting above command to output directly to /etc/hosts
+	 # I get an empty hosts file. dunno why so using a tmp file and copying over
+	 sudo cp /tmp/hosts /etc/hosts
+     exit 0
+fi
+
+#if local was passed transform it to 127.0.0.1
+if [ $IP == "local" ]
+then
+    IP="127.0.0.1"
+fi
+
+sudo bash -c "echo '$IP $DOMAIN' >> /etc/hosts"

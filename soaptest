@@ -1,0 +1,94 @@
+#!/usr/bin/env php
+DRock Soap Test Utility
+<?php
+ini_set('display_errors','1');
+try
+{
+	$console = fopen('php://stdin','r');
+	$wsdl = $argv[1];
+	
+	echo 'Creating soap client for: ' . $wsdl . PHP_EOL;
+	$client = new SoapClient($wsdl);
+	echo PHP_EOL;
+	doMainMenu();
+	
+	
+}
+catch (Exception $e)
+{
+	echo PHP_EOL , 'ERROR: ' . (string)$e;
+}
+
+
+function doMainMenu()
+{
+	global $console;
+	
+	do
+	{
+?>
+
+What would you like to do?
+1. List WSDL Methods
+2. Call Method
+
+Q. Quit
+
+Enter Choice:
+<?php
+		$choice = fgets($console,80);
+	
+		switch(trim($choice))
+		{
+			case '1':
+				printSoapFunctions();
+				break;
+				
+			case '2':
+				doCallMethod();
+				break;
+			
+			case 'q':
+			case 'Q':
+				return;
+			
+		}
+	}while(true);
+
+}
+
+
+function printSoapFunctions()
+{
+	global $client;
+	
+	$functions = $client->__getFunctions();
+	
+	if(count($functions) == 0)
+	{
+		throw new Exception('No functions defined from given WSDL');
+	}
+	
+	echo PHP_EOL . 'Available Functions:';
+	foreach($functions as $function)
+	{
+		echo PHP_EOL . $function;
+	}
+	echo PHP_EOL;
+}
+
+function doCallMethod()
+{
+	global $client;
+	global $console;
+	
+	echo PHP_EOL . 'Enter Method Call (php syntax. ex: myMethod(\'param\',1)):';
+	$command = trim(fgets($console,80));
+	
+	$call = '$result = $client->' . $command . ';';
+	eval($call);
+	print_r($result);
+	var_dump($client->__getLastRequest());
+}
+
+?>

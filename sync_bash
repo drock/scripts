@@ -1,0 +1,13 @@
+#!/bin/bash
+echo "moving to home directory"
+cd ~
+pwd
+echo "cloning git repo to gitbash"
+git clone git://github.com/drock/bash_profile gitbash
+echo "moving git repo to home directory"
+cp -R gitbash/.git ~
+echo "checking out working tree"
+git checkout -- .
+echo "cleaning up gitbash folder"
+rm -rf gitbash
+echo "done"
