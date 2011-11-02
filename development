@@ -39,10 +39,10 @@ Start up the development environment
 
 development <cmd> [<service>]
 
-<cmd>    		- The command to run (start|stop)
-<service>   	- which service to run the command on
-				- supported services = apache, mysql
-				- default = all
+<cmd>           - The command to run (start|stop)
+<service>       - which service to run the command on
+                - supported services = apache, mysql
+                - default = all
 
 EOF
 }
