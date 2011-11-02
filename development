@@ -39,7 +39,7 @@ Start up the development environment
 
 development <cmd> [<service>]
 
-<cmd>           - The command to run (start|stop)
+<cmd>           - The command to run (start|stop|restart)
 <service>       - which service to run the command on
                 - supported services = apache, mysql
                 - default = all
@@ -59,10 +59,29 @@ fi
 #default service to all
 if [[ -z $SERVICE ]]
 then
-     SERVICE = "all"
+     SERVICE="all"
 fi
 
 
 #TODO re-factor to dynamic function calling
-if [[ $]]
-if
+if [ $CMD == "start" ]
+then
+	echo "starting apache..."
+	apache2ctl start
+	mysql.server start
+fi
+
+if [ $CMD == "restart" ]
+then
+	echo "restarting apache..."
+	apache2ctl restart
+	mysql.server stop
+	mysql.server start
+fi
+
+if [ $CMD == "stop" ]
+then
+	echo "stopping apache..."
+	apache2ctl stop
+	mysql.server stop
+fi
