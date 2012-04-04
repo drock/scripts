@@ -73,6 +73,7 @@ my %conf = (
     "alertCommand"         => '',                                ## cmd to run if printmsg() contains the string 'ERR' or 'CRIT' or 'WARN'
     "noExtras"             => 0,                                 ## if 1, then we'll skip extra cmds for disabling foreign key checks, etc. at top of file
     "listTables"           => 0,                                 ## if 1, then return a list of tables contained in the restore file
+	"tableName"            => [],                               ## the name of the table(s) to include in the extracted dumpfile
 );
 
 $conf{'programName'} =~ s/(.)*[\/,\\]//;                         ## Remove path from filename
@@ -137,8 +138,10 @@ if ($conf{'mode'} eq "running") {
                 if ($line =~ /^\/\*!(.....).*\*\//) { print $line unless ($1 == 40000); }
             }
             
-            ## set a flag when we encounter the table we want
-            if ($line =~ /^-- Table structure for table `$conf{'tableName'}`/) {
+            ## set a flag when we encounter the table(s) we want
+			my $tables = join('|', @{$conf{'tableName'}});
+			
+            if ($line =~ /^-- Table structure for table `($tables)`/) {
                 $flag = 1;
                 printmsg("Turning flag on", 1);
             }
@@ -291,7 +294,7 @@ sub processCommandLine {
         elsif ($x =~ /^-v+/i)           { my $tmp = (length($&) - 1); $conf{'debug'} += $tmp; }
         elsif ($x =~ /^-l$/)            { $i++; $conf{'logFile'}    = $ARGS[$i];}
         elsif ($x =~ /^-p$/)            { $i++; $conf{'policyName'} = $ARGS[$i];}
-        elsif ($x =~ /^-t$/)            { $i++; $conf{'tableName'}  = $ARGS[$i];}
+        elsif ($x =~ /^-t$/)            { $i++; push @{$conf{'tableName'}}, $ARGS[$i];}
         elsif ($x =~ /^-r$/)            { $i++; $conf{'restoreFile'}= $ARGS[$i];}
         elsif ($x =~ /^--noExtras$/i)   {       $conf{'noExtras'}   = 1;        }
         elsif ($x =~ /^--listTables$/i) {       $conf{'listTables'} = 1;        }
@@ -301,20 +304,18 @@ sub processCommandLine {
         }
     }
     
-    my @required = (
-                      'tableName',
-    );
-    
+     
     if ($conf{'listTables'}) {
         $conf{'mode'} = 'running';
         return(1);
     }
     
-    foreach (@required) {
-        if (!$conf{$_}) {
-            quit("ERROR: Value [$_] was not set after parsing command line arguments!", 1);
-        }
+
+
+    if ($#{$conf{'tableName'}} == -1) {
+            quit("ERROR: Value tableName (-t) was not set after parsing command line arguments!", 1);
     }
+
     $conf{'mode'} = 'running';
     return(1);
 }
